@@ -67,6 +67,10 @@ def loop(delta_T):
     pygame.display.flip()  # updates the window to show the latest version of the buffer.
 
 
+def shoot():
+
+def check_for_collision():
+
 # =====================  animate_objects()
 def animate_objects(delta_T):
     """
@@ -110,6 +114,7 @@ def draw_objects():
     """
     for object in objects_on_screen:
         object.draw_self(buffer, world_offset_x, world_offset_y)
+
 
 # =====================  show_stats()
 def show_stats(delta_T):
