@@ -7,13 +7,16 @@ GAME_MODE_MAIN = 0
 GAME_MODE_TITLE_SCREEN = 1
 
 # import your classFiles here.
+from pygame_player import Player
 
 # =====================  setup()
 def setup():
+    global player
     """
     This happens once in the program, at the very beginning.
     """
-    global buffer, objects_on_screen, objects_to_add, bg_color, game_mode
+    global buffer, objects_on_screen, objects_to_add, bg_color, game_mode, world_offset_x, world_offset_y,space_background
+
     buffer = pygame.display.set_mode((600, 600))
     objects_on_screen = []  # this is a list of all things that should be drawn on screen.
     objects_to_add = [] #this is a list of things that should be added to the list on screen. Put them here while you
@@ -21,18 +24,35 @@ def setup():
                         #   to do so.
     bg_color = pygame.Color("royalblue4")  # you can find a list of color names at https://goo.gl/KR7Pke
     game_mode = GAME_MODE_MAIN
+    player = Player()
+    objects_on_screen.append(player)
     # Add any other things you would like to have the program do at startup here.
-
+    world_offset_y = 0
+    world_offset_x = 0
+    space_background = pygame.image.load("space_background.png")
 
 # =====================  loop()
 def loop(delta_T):
+    global space_background, world_offset_x, world_offset_y
     """
      this is what determines what should happen over and over.
      delta_T is the time (in seconds) since the last loop() was called.
     """
-    buffer.fill(bg_color) # wipe the screen with the background color.
+    buffer.blit(space_background, (-(world_offset_x / 2 % 1221), -(world_offset_y / 2 % 1221)))
+    if (world_offset_x / 2 % 1221) > 1221:
+        buffer.blit(space_background, (1220 - (world_offset_x / 2 % 1221), 1220 - (world_offset_y / 2 % 1221)))
+
     if game_mode == GAME_MODE_MAIN:
         animate_objects(delta_T)
+        if player.right_is_pressed:
+            world_offset_x = world_offset_x + 200 * delta_T
+        if player.left_is_pressed:
+            world_offset_x = world_offset_x - 200 * delta_T
+        if player.down_is_pressed:
+            world_offset_y = world_offset_y + 200 * delta_T
+        if player.up_is_pressed:
+            world_offset_y = world_offset_y - 200 * delta_T
+
 
         # place any other code to test interactions between objects here. If you want them to
         # disappear, set them so that they respond True to isDead(), and they will be deleted next. If you want to put
@@ -44,7 +64,6 @@ def loop(delta_T):
         add_new_objects()
         draw_objects()
         show_stats(delta_T) #optional. Comment this out if it annoys you.
-
     pygame.display.flip()  # updates the window to show the latest version of the buffer.
 
 
@@ -90,7 +109,7 @@ def draw_objects():
     Draws each object in the list of objects.
     """
     for object in objects_on_screen:
-        object.draw_self(buffer)
+        object.draw_self(buffer, world_offset_x, world_offset_y)
 
 # =====================  show_stats()
 def show_stats(delta_T):
@@ -130,6 +149,28 @@ def read_events():
             raise Exception("User quit the game")
             # You may decide to check other events, like the mouse
             # or keyboard here.
+        if evt.type == KEYDOWN:
+            player.vx = 0
+            player.vy = 0
+            if evt.key == K_a:
+                player.left_is_pressed = True
+            if evt.key == K_d:
+                player.right_is_pressed = True
+            if evt.key == K_w:
+                player.up_is_pressed = True
+            if evt.key == K_s:
+                player.down_is_pressed = True
+        if evt.type == KEYUP:
+            player.vx = 0
+            player.vy = 0
+            if evt.key == K_a:
+                player.left_is_pressed = False
+            if evt.key == K_d:
+                player.right_is_pressed = False
+            if evt.key == K_w:
+                player.up_is_pressed = False
+            if evt.key == K_s:
+                player.down_is_pressed = False
 
 
 # program start with game loop - this is what makes the loop() actually loop.

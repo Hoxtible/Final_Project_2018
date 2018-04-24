@@ -1,26 +1,34 @@
-__author__ = 'peter'
+__author__ = 'yournamehere'
 import pygame
 
 
-class Pew:
+class Player:
     def __init__(self):
         """
         This is where we set up the variables for this particular object as soon as it is created.
         """
-        self.x = 400
-        self.y = 300
+        self.x =  0
+        self.y =  0
         self.vx = 0
         self.vy = 0
         self.i_am_alive = True
+        self.left_is_pressed = False
+        self.right_is_pressed = False
+        self.down_is_pressed = False
+        self.up_is_pressed = False
+        self.i_am_alive = True
+        self.driving_images = []
+        self.image = pygame.image.load("player_image.png")
 
-    def draw_self(self, surface):
+        self.player_turn_direction = 0
+    def draw_self(self, surface, world_offset_x, world_offset_y):
         """
         It is this object's responsibility to draw itself on the surface. It will be told to do this often!
         :param surface:
         :return: None
         """
-        pygame.draw.rect(surface, pygame.Color("black"), (self.x - 5, self.y - 5, 10, 10))
-        pass
+        pygame.draw.rect(surface, pygame.Color("red"), (self.x - 5, self.y - 5, 10, 10))
+        surface.blit(self.image,(world_offset_x, world_offset_y))
 
     def step(self, delta_T):
         """
@@ -29,19 +37,24 @@ class Pew:
         :param delta_T:
         :return: None
         """
-        if self.x > 600:
-            self.die()
-        if self.y > 600:
-            self.die()
-        if self.x < 0:
-            self.die()
-        if self.y < 0:
-            self.die()
+        self.vx = 0
+        self.vy = 0
+        if self.left_is_pressed:
+            self.vx -= 200
+
+        if self.right_is_pressed:
+            self.vx += 200
+        if self.down_is_pressed:
+            self.vy += 200
+
+        if self.up_is_pressed:
+            self.vy -= 200
 
 
         self.x = self.x + self.vx * delta_T
         self.y = self.y + self.vy * delta_T
     def is_dead(self):
+
         """
         lets another object know whether this object is still live and on the board. Used by the main loop to clear objects
         in need of removal.
