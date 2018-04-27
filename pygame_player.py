@@ -7,10 +7,11 @@ class Player:
         """
         This is where we set up the variables for this particular object as soon as it is created.
         """
-        self.x =  0
-        self.y =  0
+        self.x =  300
+        self.y =  300
         self.vx = 0
         self.vy = 0
+        self.angle = 90
         self.i_am_alive = True
         self.left_is_pressed = False
         self.right_is_pressed = False
@@ -28,7 +29,8 @@ class Player:
         :return: None
         """
         pygame.draw.rect(surface, pygame.Color("red"), (self.x - 5, self.y - 5, 10, 10))
-        surface.blit(self.image,(world_offset_x, world_offset_y))
+        surface.blit(self.rotate(),(self.x-10, self.y-10))
+
 
     def step(self, delta_T):
         """
@@ -39,17 +41,6 @@ class Player:
         """
         self.vx = 0
         self.vy = 0
-        if self.left_is_pressed:
-            self.vx -= 200
-
-        if self.right_is_pressed:
-            self.vx += 200
-        if self.down_is_pressed:
-            self.vy += 200
-
-        if self.up_is_pressed:
-            self.vy -= 200
-
 
         self.x = self.x + self.vx * delta_T
         self.y = self.y + self.vy * delta_T
@@ -74,3 +65,10 @@ class Player:
         :return: None
         """
         self.i_am_alive = False
+
+    def rotate(self):
+        """Rotate the image while keeping its center."""
+        # Rotate the original image without modifying it.
+        new_image = pygame.transform.rotate(self.image, self.angle)
+        # Get a new rect with the center of the old rect.
+        return new_image

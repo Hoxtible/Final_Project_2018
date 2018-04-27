@@ -27,9 +27,9 @@ def setup():
     player = Player()
     objects_on_screen.append(player)
     # Add any other things you would like to have the program do at startup here.
-    world_offset_y = 0
-    world_offset_x = 0
-    space_background = pygame.image.load("space_background.png")
+    world_offset_y = 300
+    world_offset_x = 300
+    space_background = pygame.image.load("space_background.jpg")
 
 # =====================  loop()
 def loop(delta_T):
@@ -44,14 +44,15 @@ def loop(delta_T):
 
     if game_mode == GAME_MODE_MAIN:
         animate_objects(delta_T)
-        if player.right_is_pressed:
-            world_offset_x = world_offset_x + 200 * delta_T
-        if player.left_is_pressed:
-            world_offset_x = world_offset_x - 200 * delta_T
-        if player.down_is_pressed:
-            world_offset_y = world_offset_y + 200 * delta_T
-        if player.up_is_pressed:
-            world_offset_y = world_offset_y - 200 * delta_T
+        if player.right_is_pressed and world_offset_x <= 1200:
+            world_offset_x = world_offset_x + 100 * delta_T
+        if player.left_is_pressed and world_offset_x >= 1:
+            world_offset_x = world_offset_x - 100 * delta_T
+        if player.down_is_pressed and world_offset_y <= 1200:
+            world_offset_y = world_offset_y + 100 * delta_T
+        if player.up_is_pressed and world_offset_y >= 1:
+            world_offset_y = world_offset_y - 100 * delta_T
+        print(world_offset_y,",",world_offset_x)
 
 
         # place any other code to test interactions between objects here. If you want them to
@@ -68,9 +69,9 @@ def loop(delta_T):
 
 
 def shoot():
-
+    pass
 def check_for_collision():
-
+    pass
 # =====================  animate_objects()
 def animate_objects(delta_T):
     """
