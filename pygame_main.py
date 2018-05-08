@@ -8,14 +8,16 @@ GAME_MODE_TITLE_SCREEN = 1
 
 # import your classFiles here.
 from pygame_player import Player
+from pygame_bullet import Bullet
+from pygame_enemy  import Enemy
 
 # =====================  setup()
 def setup():
-    global player
+    global player, bullet
     """
     This happens once in the program, at the very beginning.
     """
-    global buffer, objects_on_screen, objects_to_add, bg_color, game_mode, world_offset_x, world_offset_y,space_background
+    global buffer, objects_on_screen, objects_to_add, bg_color, game_mode, world_offset_x, world_offset_y,space_background, bullet_list, enemy_list
 
     buffer = pygame.display.set_mode((600, 600))
     objects_on_screen = []  # this is a list of all things that should be drawn on screen.
@@ -27,9 +29,16 @@ def setup():
     player = Player()
     objects_on_screen.append(player)
     # Add any other things you would like to have the program do at startup here.
+    x = 0
     world_offset_y = 300
     world_offset_x = 300
     space_background = pygame.image.load("space_background.jpg")
+    bullet_list = []
+    enemy_list = []
+    for i in range(2):
+        new_enemy = Enemy()
+        enemy_list.append(new_enemy)
+        objects_on_screen.append(new_enemy)
 
 # =====================  loop()
 def loop(delta_T):
@@ -44,14 +53,11 @@ def loop(delta_T):
 
     if game_mode == GAME_MODE_MAIN:
         animate_objects(delta_T)
-        if player.right_is_pressed and world_offset_x <= 1200:
-            world_offset_x = world_offset_x + 100 * delta_T
-        if player.left_is_pressed and world_offset_x >= 1:
-            world_offset_x = world_offset_x - 100 * delta_T
-        if player.down_is_pressed and world_offset_y <= 1200:
-            world_offset_y = world_offset_y + 100 * delta_T
-        if player.up_is_pressed and world_offset_y >= 1:
-            world_offset_y = world_offset_y - 100 * delta_T
+
+        move_player(delta_T)
+        bounds_check_player()
+
+
         print(world_offset_y,",",world_offset_x)
 
 
@@ -69,19 +75,104 @@ def loop(delta_T):
 
 
 def shoot():
-    pass
+    bullet = Bullet()
+    global objects_on_screen, bullet_list, world_offset_y, world_offset_x
+    if player.left_is_pressed == False and player.up_is_pressed == False and player.down_is_pressed == False and player.right_is_pressed == False:
+        return
+
+    if player.left_is_pressed == True and player.up_is_pressed == False and player.down_is_pressed == False:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = -300
+        bullet.vy = 0
+    if player.right_is_pressed == True and player.up_is_pressed == False and player.down_is_pressed == False:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = 300
+        bullet.vy = 0
+    if player.up_is_pressed == True and player.left_is_pressed == False and player.right_is_pressed == False:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = 0
+        bullet.vy = -300
+    if player.down_is_pressed == True and player.left_is_pressed == False and player.right_is_pressed == False:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = 0
+        bullet.vy = 300
+    if player.down_is_pressed == True and player.left_is_pressed == True:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = -300
+        bullet.vy = 300
+    if player.down_is_pressed == True and player.right_is_pressed == True:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = 300
+        bullet.vy = 300
+    if player.up_is_pressed == True and player.left_is_pressed == True:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = -300
+        bullet.vy = -300
+    if player.up_is_pressed == True and player.right_is_pressed == True:
+        bullet.x = player.x + world_offset_x
+        bullet.y = player.y + world_offset_y
+        bullet.vx = 300
+        bullet.vy = -300
+    bullet_list.append(bullet)
+    objects_on_screen.append(bullet)
 def check_for_collision():
     pass
+def move_player(delta_T):
+    global space_background, world_offset_x, world_offset_y
+
+    if player.right_is_pressed and world_offset_x <= 1199:
+        world_offset_x = world_offset_x + 200 * delta_T
+        player.right_is_pressed = True
+    else:
+        player.right_is_pressed = False
+
+    if player.left_is_pressed and world_offset_x >= 1:
+        world_offset_x = world_offset_x - 200 * delta_T
+        player.left_is_pressed = True
+    else:
+        player.left_is_pressed = False
+
+    if player.down_is_pressed and world_offset_y <= 1199:
+        world_offset_y = world_offset_y + 200 * delta_T
+        player.down_is_pressed = True
+    else:
+        player.down_is_pressed = False
+
+    if player.up_is_pressed and world_offset_y >= 1:
+        world_offset_y = world_offset_y - 200 * delta_T
+        player.up_is_pressed = True
+    else:
+        player.up_is_pressed = False
+def bounds_check_player():
+    global world_offset_x, world_offset_y
+    if world_offset_y < 0:
+        world_offset_y = 1
+    if world_offset_x < 0:
+        world_offset_x = 1
+    if world_offset_y > 1200:
+        world_offset_y = 1199
+    if world_offset_x > 1200:
+        world_offset_x = 1199
+
+
+
 # =====================  animate_objects()
 def animate_objects(delta_T):
     """
     tells each object to "step"...
     """
-    global objects_on_screen
+    global objects_on_screen, world_offset_x, world_offset_y
     for object in objects_on_screen:
         if object.is_dead(): #   ...but don't bother "stepping" the dead ones.
             continue
-        object.step(delta_T)
+        object.step(delta_T,world_offset_x,world_offset_y)
 
 
 # =====================  clear_dead_objects()
@@ -113,6 +204,7 @@ def draw_objects():
     """
     Draws each object in the list of objects.
     """
+    global world_offset_x, world_offset_y
     for object in objects_on_screen:
         object.draw_self(buffer, world_offset_x, world_offset_y)
 
@@ -166,6 +258,8 @@ def read_events():
                 player.up_is_pressed = True
             if evt.key == K_s:
                 player.down_is_pressed = True
+            if evt.key == K_SPACE:
+                shoot()
         if evt.type == KEYUP:
             player.vx = 0
             player.vy = 0
