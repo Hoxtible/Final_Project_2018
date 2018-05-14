@@ -7,19 +7,20 @@ class Enemy:
         """
         This is where we set up the variables for this particular object as soon as it is created.
         """
-        self.x = random.randrange(400,600)
-        self.y = random.randrange(0,600)
+        self.x = 0
+        self.y = 0
         self.vx = random.randrange(50,500)
         self.vy = random.randrange(50,500)
         self.i_am_alive = True
-
+        self.location_x = 0
+        self.location_y = 0
     def draw_self(self, surface, world_offset_x, world_offset_y):
         """
         It is this object's responsibility to draw itself on the surface. It will be told to do this often!
         :param surface:
         :return: None
         """
-        pygame.draw.rect(surface, pygame.Color("green"), (self.x-world_offset_x, self.y - world_offset_y, 10, 10))
+        pygame.draw.rect(surface, pygame.Color("green"), (self.x - world_offset_x - 5, self.y -world_offset_y -5, 10, 10))
 
     def step(self, delta_T, world_offset_x, world_offset_y):
         """
@@ -28,19 +29,26 @@ class Enemy:
         :param delta_T:
         :return: None
         """
+        self.location_x = self.x - world_offset_x - 5
+        self.location_y = self.y - world_offset_y - 5
         self.x = self.x + self.vx * delta_T
         self.y = self.y + self.vy * delta_T
-        if self.x < 0 + world_offset_x :
-            self.x = 0
-            self.vx = self.vx * -1
+        if self.location_x < 0 - world_offset_x +300 - 5:
+            self.vx = abs(self.vx) * 1
 
-        if self.x > 1200 :
-            self.vx = self.vx * -1
 
-        if self.y < 0 :
-            self.vy = self.vy * -1
-        if self.y > 1200 :
-            self.vy = self.vy * -1
+        if self.location_x >1200 - world_offset_x +300 - 5:
+            self.vx = abs(self.vx) * -1
+
+
+        if self.location_y < 0 - world_offset_y +300 - 5:
+            self.vy = abs(self.vy) * 1
+
+
+
+        if self.location_y > 1200 - world_offset_y +300 - 5:
+            self.vy = abs(self.vy) * -1
+
     def is_dead(self):
         """
         lets another object know whether this object is still live and on the board. Used by the main loop to clear objects

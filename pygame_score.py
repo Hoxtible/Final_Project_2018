@@ -7,10 +7,9 @@ class Player:
         """
         This is where we set up the variables for this particular object as soon as it is created.
         """
-        self.x =  300
-        self.y =  300
-        self.vx = 0 
-        self.vy = 0
+        self.x =  550
+        self.y =  0
+        self.lives = 3
         self.angle = 0
         self.i_am_alive = True
         self.left_is_pressed = False
@@ -27,8 +26,7 @@ class Player:
         :param surface:
         :return: None
         """
-        pygame.draw.rect(surface, pygame.Color("red"), (self.x - 5, self.y - 5, 10, 10))
-        surface.blit(self.rotate(),(self.x-10, self.y-10))
+        surface.blit(self.image,(self.x-10, self.y-10))
 
 
     def step(self, delta_T,world_offset_x,world_offset_y):
@@ -43,23 +41,6 @@ class Player:
 
         self.x = self.x + self.vx * delta_T
         self.y = self.y + self.vy * delta_T
-        if self.left_is_pressed == True and self.up_is_pressed == False and self.down_is_pressed == False:
-            self.angle = 90
-        if self.right_is_pressed == True and self.up_is_pressed == False and self.down_is_pressed == False:
-            self.angle = 270
-        if self.up_is_pressed == True and self.left_is_pressed == False and self.right_is_pressed == False:
-            self.angle = 0
-        if self.down_is_pressed == True and self.left_is_pressed == False and self.right_is_pressed == False:
-            self.angle = 180
-        if self.down_is_pressed == True and self.left_is_pressed == True:
-            self.angle = 135
-        if self.down_is_pressed == True and self.right_is_pressed == True:
-            self.angle = 225
-        if self.up_is_pressed == True and self.left_is_pressed == True:
-            self.angle = 45
-        if self.up_is_pressed == True and self.right_is_pressed == True:
-            self.angle = 315
-
 
 
     def is_dead(self):
@@ -84,9 +65,3 @@ class Player:
         """
         self.i_am_alive = False
 
-    def rotate(self):
-        """Rotate the image while keeping its center."""
-        # Rotate the original image without modifying it.
-        new_image = pygame.transform.rotate(self.image, self.angle)
-        # Get a new rect with the center of the old rect.
-        return new_image

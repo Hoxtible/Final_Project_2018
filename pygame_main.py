@@ -18,6 +18,7 @@ def setup():
     This happens once in the program, at the very beginning.
     """
     global buffer, objects_on_screen, objects_to_add, bg_color, game_mode, world_offset_x, world_offset_y,space_background, bullet_list, enemy_list
+    global score
 
     buffer = pygame.display.set_mode((600, 600))
     objects_on_screen = []  # this is a list of all things that should be drawn on screen.
@@ -35,7 +36,8 @@ def setup():
     space_background = pygame.image.load("space_background.jpg")
     bullet_list = []
     enemy_list = []
-    for i in range(2):
+    score = 0
+    for i in range(10):
         new_enemy = Enemy()
         enemy_list.append(new_enemy)
         objects_on_screen.append(new_enemy)
@@ -56,6 +58,8 @@ def loop(delta_T):
 
         move_player(delta_T)
         bounds_check_player()
+        check_for_collision()
+
 
 
         print(world_offset_y,",",world_offset_x)
@@ -123,7 +127,14 @@ def shoot():
     bullet_list.append(bullet)
     objects_on_screen.append(bullet)
 def check_for_collision():
-    pass
+    global bugs_shot, bullet_list, enemy_list, objects_on_screen, shootyboi, score
+    for bullet in bullet_list:
+        for enemy in enemy_list:
+            if abs((bullet.x - 0) - (enemy.x - 0)) <= 12 and abs((bullet.y - 0) - (enemy.y - 0)) <= 12:
+                bullet.die()
+                enemy.die()
+                score += 10
+
 def move_player(delta_T):
     global space_background, world_offset_x, world_offset_y
 
@@ -180,7 +191,7 @@ def clear_dead_objects():
     """
     removes all objects that are dead from the "objectsOnScreen" list
     """
-    global objects_on_screen
+    global objects_on_screen, enemy_list, bullet_list
     i = 0
     for object in objects_on_screen[:]:
         if object.is_dead():
@@ -188,6 +199,19 @@ def clear_dead_objects():
                                      #      ... they came back to you.
         else:
             i += 1
+    i = 0
+    for bullet in bullet_list[:]:
+        if bullet.is_dead():
+            bullet_list.pop(i)
+        else:
+            i+=1
+    i = 0
+    for enemy in enemy_list[:]:
+        if enemy.is_dead():
+            enemy_list.pop(i)
+        else:
+            i += 1
+
 
 # =====================  add_new_objects()
 def add_new_objects():
@@ -211,6 +235,7 @@ def draw_objects():
 
 # =====================  show_stats()
 def show_stats(delta_T):
+    global score
     """
     draws the frames-per-second in the lower-left corner and the number of objects on screen in the lower-right corner.
     Note: the number of objects on screen may be a bit misleading. They still count even if they are being drawn off the
@@ -220,6 +245,7 @@ def show_stats(delta_T):
     """
     white_color = pygame.Color(255,255,255)
     stats_font = pygame.font.SysFont('Arial', 10)
+    score_string = score
 
     fps_string = "FPS: {0:3.1f}".format(1.0/delta_T) #build a string with the calculation of FPS.
     fps_text_surface = stats_font.render(fps_string,True,white_color) #this makes a transparent box with text
@@ -234,6 +260,13 @@ def show_stats(delta_T):
     objects_text_rect.right = buffer.get_rect().right - 10 # move this box to the lower right corner
     objects_text_rect.bottom = buffer.get_rect().bottom - 10
     buffer.blit(objects_text_surface, objects_text_rect)
+
+    score_string = "Score: {0}".format(score_string)  # build a string with the number of objects
+    score_text_surface = stats_font.render(score_string, True, white_color)
+    score_text_rect = score_text_surface.get_rect()
+    score_text_rect.left = buffer.get_rect().left + 10  # move this box to the lower right corner
+    score_text_rect.top = buffer.get_rect().top + 10
+    buffer.blit(score_text_surface, score_text_rect)
 
 # =====================  read_events()
 def read_events():
