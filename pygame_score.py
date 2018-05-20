@@ -2,13 +2,13 @@ __author__ = 'yournamehere'
 import pygame, math
 
 
-class Player:
+class Lives:
     def __init__(self):
         """
         This is where we set up the variables for this particular object as soon as it is created.
         """
-        self.x =  550
-        self.y =  0
+        self.x =  20
+        self.y =  580
         self.lives = 3
         self.angle = 0
         self.i_am_alive = True
@@ -26,7 +26,9 @@ class Player:
         :param surface:
         :return: None
         """
-        surface.blit(self.image,(self.x-10, self.y-10))
+        for i in range (0,self.lives):
+            surface.blit(self.image,(self.x-10+ (i*25), self.y-10))
+
 
 
     def step(self, delta_T,world_offset_x,world_offset_y):

@@ -3,13 +3,15 @@ __author__ = 'yournamehere'  # put your name here!!!
 import pygame, sys, traceback, random
 from pygame.locals import *
 
-GAME_MODE_MAIN = 0
+GAME_MODE_MAIN = 1
 GAME_MODE_TITLE_SCREEN = 1
+GAME_OVER = 0
 
 # import your classFiles here.
 from pygame_player import Player
 from pygame_bullet import Bullet
 from pygame_enemy  import Enemy
+from pygame_score  import Lives
 
 # =====================  setup()
 def setup():
@@ -18,7 +20,7 @@ def setup():
     This happens once in the program, at the very beginning.
     """
     global buffer, objects_on_screen, objects_to_add, bg_color, game_mode, world_offset_x, world_offset_y,space_background, bullet_list, enemy_list
-    global score
+    global score, lives, game_over_1
 
     buffer = pygame.display.set_mode((600, 600))
     objects_on_screen = []  # this is a list of all things that should be drawn on screen.
@@ -28,6 +30,7 @@ def setup():
     bg_color = pygame.Color("royalblue4")  # you can find a list of color names at https://goo.gl/KR7Pke
     game_mode = GAME_MODE_MAIN
     player = Player()
+    lives = Lives()
     objects_on_screen.append(player)
     # Add any other things you would like to have the program do at startup here.
     x = 0
@@ -37,14 +40,13 @@ def setup():
     bullet_list = []
     enemy_list = []
     score = 0
-    for i in range(10):
-        new_enemy = Enemy()
-        enemy_list.append(new_enemy)
-        objects_on_screen.append(new_enemy)
+    objects_on_screen.append(lives)
+    spawn_enemies(50)
+    game_over_1 = False
 
 # =====================  loop()
 def loop(delta_T):
-    global space_background, world_offset_x, world_offset_y
+    global space_background, world_offset_x, world_offset_y, lives
     """
      this is what determines what should happen over and over.
      delta_T is the time (in seconds) since the last loop() was called.
@@ -53,16 +55,20 @@ def loop(delta_T):
     if (world_offset_x / 2 % 1221) > 1221:
         buffer.blit(space_background, (1220 - (world_offset_x / 2 % 1221), 1220 - (world_offset_y / 2 % 1221)))
 
-    if game_mode == GAME_MODE_MAIN:
+
+
+    if game_over_1 == False:
+
         animate_objects(delta_T)
 
         move_player(delta_T)
         bounds_check_player()
         check_for_collision()
+        check_player_dead_game_over()
 
 
 
-        print(world_offset_y,",",world_offset_x)
+        # print(world_offset_y,",",world_offset_x)
 
 
         # place any other code to test interactions between objects here. If you want them to
@@ -75,7 +81,20 @@ def loop(delta_T):
         add_new_objects()
         draw_objects()
         show_stats(delta_T) #optional. Comment this out if it annoys you.
-    pygame.display.flip()  # updates the window to show the latest version of the buffer.
+    else:
+        print("game over")
+        game_over()
+        end_text()
+    pygame.display.flip()
+
+
+    # updates the window to show the latest version of the buffer.
+
+def spawn_enemies(number_of_enemies):
+    for i in range(number_of_enemies):
+        new_enemy = Enemy()
+        enemy_list.append(new_enemy)
+        objects_on_screen.append(new_enemy)
 
 
 def shoot():
@@ -127,13 +146,52 @@ def shoot():
     bullet_list.append(bullet)
     objects_on_screen.append(bullet)
 def check_for_collision():
-    global bugs_shot, bullet_list, enemy_list, objects_on_screen, shootyboi, score
-    for bullet in bullet_list:
-        for enemy in enemy_list:
+    global bugs_shot, bullet_list, enemy_list, objects_on_screen, shootyboi, score, player, lives
+    for enemy in enemy_list:
+        for bullet in bullet_list:
             if abs((bullet.x - 0) - (enemy.x - 0)) <= 12 and abs((bullet.y - 0) - (enemy.y - 0)) <= 12:
                 bullet.die()
                 enemy.die()
                 score += 10
+                spawn_enemies(1)
+        if abs((player.x - 0) - (enemy.location_x - 0)) <= 12 and abs((player.y - 0) - (enemy.location_y - 0)) <= 12:
+            lives.lives = lives.lives - 1
+            enemy.die()
+            print("-1 life")
+
+def game_over():
+    global bugs_shot, bullet_list, enemy_list, objects_on_screen, shootyboi, score, player, lives
+
+    for enemy in enemy_list:
+        for bullet in bullet_list:
+                bullet.die()
+                enemy.die()
+                player.die()
+
+
+def check_player_dead_game_over():
+    global game_mode, game_over_1, lives
+    if lives.lives == 0:
+        print("meme")
+        game_over_1 = True
+def end_text():
+    global score
+    stats_font = pygame.font.SysFont('Comic Sans MS', 60)
+    game_string = "Game Over"  # build a string with the number of objects
+    game_text_surface = stats_font.render(game_string, True, pygame.Color("Blue"))
+    game_text_rect = game_text_surface.get_rect()
+    game_text_rect.left = buffer.get_rect().left + 140  # move this box to the lower right corner
+    game_text_rect.top = buffer.get_rect().top + 200
+    buffer.blit(game_text_surface, game_text_rect)
+
+    score_font = pygame.font.SysFont('Comic Sans MS', 30)
+    score_string = "Score: {0}".format(score)  # build a string with the number of objects
+    score_text_surface = stats_font.render(score_string, True, pygame.Color("Red"))
+    score_text_rect = game_text_surface.get_rect()
+    score_text_rect.left = buffer.get_rect().left + 175  # move this box to the lower right corner
+    score_text_rect.top = buffer.get_rect().top + 350
+    buffer.blit(score_text_surface, score_text_rect)
+
 
 def move_player(delta_T):
     global space_background, world_offset_x, world_offset_y
